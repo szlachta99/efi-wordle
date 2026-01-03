@@ -1,0 +1,14 @@
+#! /bin/bash
+
+TARGET_DIR="./run-ovmf/hda-contents/EFI/BOOT"
+
+if [ ! -d "$TARGET_DIR" ]; then
+    mkdir -p "$TARGET_DIR"
+fi
+
+cp build/bin/wordle.efi "$TARGET_DIR/BOOTX64.EFI"
+
+cd ./run-ovmf
+
+
+sudo qemu-system-x86_64   -machine q35,smm=on   -drive if=pflash,format=raw,readonly,file=/usr/share/OVMF/OVMF_CODE.fd   -drive if=pflash,format=raw,file=/usr/share/OVMF/OVMF_VARS.fd   -drive file=fat:rw:hda-contents,format=raw   -m 512M

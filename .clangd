@@ -1,0 +1,9 @@
+CompileFlags:
+  Add:
+    - -I/usr/include/efi
+    - -fpic
+    - -ffreestanding
+    - -fno-stack-protector
+    - -fno-stack-check
+    - -fshort-wchar
+    - -mno-red-zone
