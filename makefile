@@ -75,7 +75,9 @@ $(TARGET): $(SHARED_OBJ) | $(BIN_DIR)
 # Clean up generated files
 clean:
 	rm -rf $(BUILD_DIR)
+
 run: $(TARGET)
 	./run
+
 # Phony targets
-.PHONY: all clean
+.PHONY: all clean debug run

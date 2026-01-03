@@ -1,12 +1,8 @@
+#include "colors.h"
+#include "game.h"
 #include "rendering.h"
 #include <efi.h>
 #include <efilib.h>
-
-EFI_GRAPHICS_OUTPUT_BLT_PIXEL GREEN = {0, 255, 0, 0};
-EFI_GRAPHICS_OUTPUT_BLT_PIXEL WHITE = {255, 255, 255, 0};
-EFI_GRAPHICS_OUTPUT_BLT_PIXEL BLACK = {0, 0, 0, 0};
-EFI_GRAPHICS_OUTPUT_BLT_PIXEL YELLOW = {0, 255, 255, 0};
-EFI_GRAPHICS_OUTPUT_BLT_PIXEL GRAY = {128, 128, 128, 0};
 
 UINT16 wait_for_key() {
   UINTN index;
@@ -20,11 +16,9 @@ UINT16 wait_for_key() {
 }
 
 char utf16_to_ascii(UINT16 utf16_char) {
-  // ASCII is just the first 128 values (0-127)
   if (utf16_char < 128) {
     return (char)utf16_char;
   }
-  // Non-ASCII character, return placeholder
   return '?';
 }
 
@@ -40,20 +34,37 @@ efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable) {
     Print(L"Error occured while initializing video\n");
     return Status;
   }
-
+  Game game;
+  init_game(&game);
   clear_screen(GRAY);
 
-  char c = utf16_to_ascii(wait_for_key());
-  int cursor = 0;
-  int x_step = 55;
-  int y_step = 60;
-  int line_size = 10;
-  UINTN x = 10, y = 10;
-  while (c != 'Q') {
-    draw_letter_box(c, x + (cursor % line_size) * x_step,
-                    y + (cursor / line_size) * y_step, BLACK, WHITE);
-    cursor++;
-    c = utf16_to_ascii(wait_for_key());
+  draw_string("WORDLE", (Vec2){10, 10}, GREEN, GRAY, 2);
+  draw_guesses(&game);
+  while (game.status == Ongoing) {
+    char c = utf16_to_ascii(wait_for_key());
+    on_keypress(&game, c);
+    if (game.status == Exited) {
+      draw_string("Are you sure to leave? (Y/N)", (Vec2){50, 100}, RED, GRAY,
+                  1);
+      while (c != 'y' && c != 'n') {
+        c = utf16_to_ascii(wait_for_key());
+      }
+      if (c == 'n') {
+        game.status = Ongoing;
+        clear_screen(GRAY);
+        draw_string("WORDLE", (Vec2){10, 10}, GREEN, GRAY, 2);
+        draw_guesses(&game);
+      }
+    }
   }
+
+  if (game.status == Won) {
+    draw_string("YOU WON!", (Vec2){50, 100}, GREEN, GRAY, 1);
+  } else if (game.status == Lost) {
+    draw_string("YOU LOST!", (Vec2){50, 100}, RED, GRAY, 1);
+  }
+  if (game.status != Exited)
+    wait_for_key();
+  clear_screen(BLACK);
   return EFI_SUCCESS;
 }

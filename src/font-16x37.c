@@ -1,3 +1,4 @@
+// borrowed from https://github.com/idispatch/raster-fonts
 #include "font.h"
 
 long long int character_offset(char c) { return c * 2 * 37; }
