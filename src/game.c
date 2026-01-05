@@ -6,13 +6,25 @@
 #include <efi.h>
 #include <efilib.h>
 
+unsigned long long int bitwise_generator(unsigned long long int seed) {
+  int p = 7;
+  int q = 3;
+  for (int i = 0; i < sizeof(long long int) * 8; i++) {
+    int b1 = ((seed >> (p - 1)) & 1);
+    int b2 = ((seed >> (q - 1)) & 1);
+    seed = (seed << 1) | (b1 ^ b2);
+  }
+  return seed;
+}
+
 void init_game(Game *game) {
   game->cursor = 0;
   game->guesses = 0;
-  int random;
+  unsigned long long int random;
   EFI_TIME time;
   uefi_call_wrapper(gRT->GetTime, 2, &time, NULL);
-  random = (time.Year * 12 + time.Month * 31 + time.Day) % word_count;
+  random = bitwise_generator(time.Month * 31 + time.Day) % word_count;
+  Print(L"random number %d\n", random);
   for (int i = 0; i < 5; i++) {
     game->word[i] = dictionary[random][i];
   }
