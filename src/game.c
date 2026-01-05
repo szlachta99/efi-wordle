@@ -24,7 +24,6 @@ void init_game(Game *game) {
   EFI_TIME time;
   uefi_call_wrapper(gRT->GetTime, 2, &time, NULL);
   random = bitwise_generator(time.Month * 31 + time.Day) % word_count;
-  Print(L"random number %d\n", random);
   for (int i = 0; i < 5; i++) {
     game->word[i] = dictionary[random][i];
   }
